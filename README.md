@@ -2,7 +2,7 @@
 
 Aplicação front-end (Vite + React) para plantão, passagens de UTI e indicadores.
 
-**Versão npm:** `0.1.0` (ver `package.json`). **Tag Git da entrega demo:** `v0.1.0-cliente` — use `git checkout v0.1.0-cliente` para reproduzir exatamente o snapshot mostrado ao cliente. Para publicar: crie um repositório no GitHub/GitLab e `git remote add origin …` seguido de `git push -u origin master --tags`.
+**Versão npm:** `0.1.0` (ver `package.json`). **Tag da entrega demo:** `v0.1.0-cliente` (`git checkout v0.1.0-cliente`). **Repositório:** [github.com/neftaliof/fisioPlantao](https://github.com/neftaliof/fisioPlantao) — branch `main`.
 
 ## Desenvolvimento
 
