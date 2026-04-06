@@ -13,6 +13,18 @@ npm run test
 npm run build
 ```
 
+## Deploy na Vercel
+
+1. Entre em [vercel.com](https://vercel.com) com a conta GitHub.  
+2. **Add New → Project** e importe o repositório `neftaliof/fisioPlantao`.  
+3. A Vercel deteta **Vite**: comando de build `npm run build`, pasta de saída **`dist`** (confirmar nos settings do projeto se necessário).  
+4. Em **Settings → Environment Variables**, adicione as variáveis `VITE_*` que precisar (ex.: `VITE_FEATURE_OLLAMA_INSIGHTS`, `VITE_OLLAMA_URL`); no Vite elas são incorporadas **no momento do build**.  
+5. **Deploy**. Cada push na branch ligada (normalmente `main`) gera um novo deploy.
+
+O ficheiro **`vercel.json`** na raiz define *rewrites* para `index.html`, para o **React Router** funcionar ao recarregar rotas como `/dashboard` ou `/indicadores-uti`.
+
+**Ollama a partir do browser:** o URL em `VITE_OLLAMA_URL` tem de ser **alcançável pelo navegador do utilizador**, com **HTTPS** e CORS adequados (um proxy na mesma origem costuma ser o caminho mais simples). Um endereço só acessível na tua máquina não funcionará para quem abrir o site na Vercel.
+
 ## Insights (Ollama)
 
 No ecrã **Indicadores UTI**, quem tem permissão pode usar **Gerar insights**: os KPIs e alertas já calculados são enviados ao modelo; a resposta é um texto em markdown para leitura no painel. **Não substitui** critérios clínicos nem decisões da instituição; convém **validar** com os números dos gráficos e cartões. Mais contexto no painel, em **“Sobre os insights (IA)”**.
