@@ -93,9 +93,13 @@ export interface ControleDiario {
 export interface PacienteCadastrado {
   id: string;
   nome: string;
+  /** Alinhado à chave da ficha FOR.017 (nome + data de nascimento). */
+  dataNascimento: string;
   prontuario: string;
   observacao: string;
   createdAt: string;
+  /** Preenchido quando o cadastro veio de «Concluir admissão» na Página 4. */
+  admissaoConcluidaEm?: string;
 }
 
 export interface LeitoCadastrado {

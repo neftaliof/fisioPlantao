@@ -68,7 +68,7 @@ const navSections: NavSection[] = [
         icon: <Library size={18} />,
         children: [
           { label: "Visão geral", to: "/cadastro" },
-          { label: "Pacientes", to: "/cadastro/pacientes" },
+          { label: "Pacientes — admissão (FOR.017)", to: "/cadastro/pacientes" },
           { label: "Leitos por UTI", to: "/cadastro/leitos" },
           { label: "Fisioterapeutas", to: "/cadastro/fisioterapeutas" },
         ],

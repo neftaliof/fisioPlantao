@@ -48,12 +48,14 @@ export function Fisioterapeutas() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const filtrados = lista.filter(
-    (f) =>
-      f.nome.toLowerCase().includes(search.toLowerCase()) ||
-      f.coren.toLowerCase().includes(search.toLowerCase()) ||
-      f.turno.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtrados = lista
+    .filter(
+      (f) =>
+        f.nome.toLowerCase().includes(search.toLowerCase()) ||
+        f.coren.toLowerCase().includes(search.toLowerCase()) ||
+        f.turno.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" }));
 
   const abrirNovo = () => {
     setEditando(null);

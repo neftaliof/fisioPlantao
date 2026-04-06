@@ -5,7 +5,7 @@ const cards = [
   {
     to: "/cadastro/pacientes",
     title: "Pacientes",
-    desc: "Cadastre nomes e prontuário para reutilizar na coleta por leito.",
+    desc: "Registo só na admissão — Página 4 (FOR.017). Depois aparecem na coleta por leito.",
     icon: UserPlus,
     accent: "from-teal-50 to-white ring-teal-100",
   },
@@ -32,8 +32,8 @@ export function CadastroHub() {
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Cadastro</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">Bases do plantão</h1>
         <p className="mt-2 max-w-xl text-sm text-slate-500 leading-relaxed">
-          Cadastre primeiro pacientes, leitos da UTI e profissionais. Depois use esses dados em{" "}
-          <strong>Coleta por leito</strong>, passagens e restantes telas.
+          <strong>Pacientes</strong> entram pela admissão na Página 4 (FOR.017). Leitos e fisioterapeutas
+          configuram-se abaixo; use tudo na coleta por leito e passagens.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

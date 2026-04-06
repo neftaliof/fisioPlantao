@@ -534,7 +534,8 @@ export function FormDadosPaciente() {
                       />
                       <p className="text-xs text-slate-400 leading-relaxed">
                         Com nome, o status do leito avança para em andamento até os demais dados
-                        estarem preenchidos. Cadastre pacientes em <strong>Cadastro → Pacientes</strong>.
+                        estarem preenchidos. O nome na lista de sugestões vem da{" "}
+                        <strong>Página 4 (FOR.017)</strong> após <strong>Concluir admissão</strong>.
                       </p>
                     </div>
                   )}

@@ -29,6 +29,7 @@ import {
   salvarFichaPacientePagina4,
   mergeColetaPagina4,
 } from "../data/pagina4Store";
+import { upsertPacienteAdmissaoPagina4 } from "../data/pacientesCadastroStore";
 import {
   CNT_QUALI_FISIO_ITENS,
   COMPLICACOES_PAG4,
@@ -193,6 +194,14 @@ export function FormPagina4ColetaFisio() {
     };
     const merged = mergeColetaPagina4(next, uid, unome);
     salvarFichaPacientePagina4(k, merged);
+    upsertPacienteAdmissaoPagina4({
+      paciente: merged.paciente,
+      dataNascimento: merged.dataNascimento,
+      internacaoMensalNum: merged.internacaoMensalNum,
+      dataAdmissao: merged.dataAdmissao,
+      procedencia: merged.procedencia,
+      admissaoConcluidaEm: now,
+    });
     setForm(merged);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 2500);
@@ -236,7 +245,9 @@ export function FormPagina4ColetaFisio() {
             </h1>
             <p className="text-sm text-slate-600 mt-1">
               Admissão e avaliação inicial + FOR.017 — preenchidos <strong>uma vez na entrada</strong>.{" "}
-              O <strong>destino</strong> (alta, transferência ou óbito) preenche-se <strong>só na saída</strong>{" "}
+              O <strong>cadastro do paciente</strong> no sistema (para coleta por leito e restantes fluxos)
+              ocorre <strong>somente ao concluir a admissão</strong> aqui, não noutros ecrãs. O{" "}
+              <strong>destino</strong> (alta, transferência ou óbito) preenche-se <strong>só na saída</strong>{" "}
               do paciente.
             </p>
           </div>

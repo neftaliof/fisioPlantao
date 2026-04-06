@@ -1,187 +1,114 @@
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Plus, Pencil, Trash2, ArrowLeft, Save } from "lucide-react";
-import type { PacienteCadastrado } from "../../types";
-import {
-  listarPacientesCadastro,
-  adicionarPacienteCadastro,
-  atualizarPacienteCadastro,
-  removerPacienteCadastro,
-} from "../../data/pacientesCadastroStore";
-
-const inField =
-  "w-full rounded-xl bg-slate-50 px-3 py-2 text-sm ring-1 ring-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30";
+import { ArrowLeft, FileText, ExternalLink, Info } from "lucide-react";
+import { listarPacientesCadastro } from "../../data/pacientesCadastroStore";
 
 export function CadastroPacientes() {
-  const [lista, setLista] = useState<PacienteCadastrado[]>(() => listarPacientesCadastro());
-  const [modal, setModal] = useState<PacienteCadastrado | null | "novo">(null);
-  const [nome, setNome] = useState("");
-  const [prontuario, setProntuario] = useState("");
-  const [observacao, setObservacao] = useState("");
+  const [tick, setTick] = useState(0);
 
-  const refresh = () => setLista(listarPacientesCadastro());
+  useEffect(() => {
+    const refresh = () => setTick((t) => t + 1);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
 
-  const abrirNovo = () => {
-    setNome("");
-    setProntuario("");
-    setObservacao("");
-    setModal("novo");
-  };
-
-  const abrirEditar = (p: PacienteCadastrado) => {
-    setModal(p);
-    setNome(p.nome);
-    setProntuario(p.prontuario);
-    setObservacao(p.observacao);
-  };
-
-  const salvar = () => {
-    if (!nome.trim()) return;
-    if (modal === "novo") {
-      adicionarPacienteCadastro({
-        nome: nome.trim(),
-        prontuario: prontuario.trim(),
-        observacao: observacao.trim(),
-      });
-    } else if (modal && modal !== "novo") {
-      atualizarPacienteCadastro(modal.id, {
-        nome: nome.trim(),
-        prontuario: prontuario.trim(),
-        observacao: observacao.trim(),
-      });
-    }
-    setModal(null);
-    refresh();
-  };
-
-  const excluir = (id: string) => {
-    if (!window.confirm("Remover este paciente da base de cadastro?")) return;
-    removerPacienteCadastro(id);
-    refresh();
-  };
+  const lista = useMemo(() => {
+    void tick;
+    return listarPacientesCadastro().slice().sort((a, b) =>
+      a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+    );
+  }, [tick]);
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Link
-            to="/cadastro"
-            className="inline-flex items-center gap-1 text-sm text-teal-700 hover:text-teal-900"
-          >
-            <ArrowLeft size={16} /> Voltar ao cadastro
-          </Link>
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">Pacientes cadastrados</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Sugestões de nome ao preencher a coleta por leito (pode digitar livremente mesmo sem cadastro).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={abrirNovo}
-          className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-teal-700"
+      <div>
+        <Link
+          to="/cadastro"
+          className="inline-flex items-center gap-1 text-sm text-teal-700 hover:text-teal-900"
         >
-          <Plus size={18} /> Novo paciente
-        </button>
+          <ArrowLeft size={16} /> Voltar ao cadastro
+        </Link>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-900">Pacientes — admissão (FOR.017)</h1>
+        <p className="mt-2 text-sm text-slate-600 leading-relaxed max-w-2xl">
+          O registo do paciente na aplicação é feito <strong>exclusivamente</strong> na ficha{" "}
+          <strong>Página 4 — Coleta / admissão</strong>, alinhada ao impresso institucional: identificação,
+          convênio, dados clínicos de admissão, avaliação ventilatória, funcionalidade, complicações e, na
+          alta, o destino. Use <strong>Concluir admissão</strong> para fechar a entrada e gravar o paciente
+          na base reutilizada noutras telas (ex.: sugestões na coleta por leito).
+        </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-start gap-3 rounded-xl border border-teal-200 bg-teal-50/60 px-4 py-3 text-sm text-teal-950">
+        <Info size={20} className="shrink-0 mt-0.5 text-teal-700" />
+        <p>
+          Não há cadastro rápido nesta página. Abra o formulário completo em{" "}
+          <strong>Formulários → Página 4</strong> ou no botão abaixo.
+        </p>
+      </div>
+
+      <Link
+        to="/formularios/pagina-4"
+        className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border-2 border-teal-500 bg-white p-6 shadow-sm hover:bg-teal-50/40 transition-colors"
+      >
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white">
+          <FileText size={28} strokeWidth={1.5} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-semibold text-slate-900">Abrir ficha de admissão</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">/formularios/pagina-4</code> —
+            preencha a admissão e clique em <strong>Concluir admissão</strong> para registar o paciente.
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-teal-700 sm:shrink-0">
+          Ir ao formulário <ExternalLink size={16} />
+        </span>
+      </Link>
+
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-slate-100 px-4 py-3 bg-slate-50">
+          <h3 className="text-sm font-semibold text-slate-800">Pacientes já registados (após admissão)</h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Lista derivada de fichas com admissão concluída — apenas consulta.
+          </p>
+        </div>
         {lista.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
-            Nenhum paciente cadastrado ainda.
+            Ainda não há pacientes na base. Conclua uma admissão na Página 4.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Nome</th>
-                <th className="px-4 py-3">Prontuário</th>
-                <th className="px-4 py-3 hidden md:table-cell">Obs.</th>
-                <th className="px-4 py-3 w-24" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {lista.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50/80">
-                  <td className="px-4 py-3 font-medium text-slate-900">{p.nome}</td>
-                  <td className="px-4 py-3 text-slate-600">{p.prontuario || "—"}</td>
-                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell max-w-xs truncate">
-                    {p.observacao || "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => abrirEditar(p)}
-                        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-teal-700"
-                        title="Editar"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => excluir(p.id)}
-                        className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600"
-                        title="Excluir"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Nome</th>
+                  <th className="px-4 py-3">Nascimento</th>
+                  <th className="px-4 py-3">Internação mensal nº</th>
+                  <th className="px-4 py-3 hidden md:table-cell">Admissão concluída</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {lista.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50/80">
+                    <td className="px-4 py-3 font-medium text-slate-900">{p.nome}</td>
+                    <td className="px-4 py-3 text-slate-600 tabular-nums">
+                      {p.dataNascimento
+                        ? new Date(p.dataNascimento + "T12:00:00").toLocaleDateString("pt-BR")
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{p.prontuario || "—"}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs hidden md:table-cell">
+                      {p.admissaoConcluidaEm
+                        ? new Date(p.admissaoConcluidaEm).toLocaleString("pt-BR")
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
-
-      {modal !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">
-              {modal === "novo" ? "Novo paciente" : "Editar paciente"}
-            </h2>
-            <div className="mt-4 space-y-3">
-              <div>
-                <label className="text-xs font-medium text-slate-500">Nome completo *</label>
-                <input className={`mt-1 ${inField}`} value={nome} onChange={(e) => setNome(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-slate-500">Prontuário</label>
-                <input
-                  className={`mt-1 ${inField}`}
-                  value={prontuario}
-                  onChange={(e) => setProntuario(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-slate-500">Observação</label>
-                <textarea
-                  className={`mt-1 min-h-[4rem] ${inField}`}
-                  value={observacao}
-                  onChange={(e) => setObservacao(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setModal(null)}
-                className="rounded-xl px-4 py-2 text-sm text-slate-600 hover:bg-slate-100"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={salvar}
-                disabled={!nome.trim()}
-                className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-              >
-                <Save size={16} /> Salvar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
