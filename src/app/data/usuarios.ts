@@ -84,7 +84,6 @@ export const todosUsuarios: UsuarioLogin[] = [
     nome: "Rafaela Rezende",
     senha: "rafaela123",
     foto: fotoRafaelaRezende,
-    telefone: "+55 62 9184-6467",
     role: "admin",
     cargo: "Administradora Geral",
     equipe: "geral",
