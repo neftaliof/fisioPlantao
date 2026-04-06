@@ -89,6 +89,25 @@ export interface ControleDiario {
   createdAt: string;
 }
 
+// ===== CADASTRO (bases reutilizáveis no plantão) =====
+export interface PacienteCadastrado {
+  id: string;
+  nome: string;
+  prontuario: string;
+  observacao: string;
+  createdAt: string;
+}
+
+export interface LeitoCadastrado {
+  id: string;
+  utiId: string;
+  numero: number;
+  /** Texto curto ex.: "Box ventral" */
+  rotulo: string;
+  ativo: boolean;
+  createdAt: string;
+}
+
 // ===== PLANTÃO DADOS PACIENTE =====
 export interface PlantaoDadosPaciente {
   id: string;

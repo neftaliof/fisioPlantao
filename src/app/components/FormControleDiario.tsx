@@ -10,7 +10,7 @@ import {
   BedDouble,
 } from "lucide-react";
 import { LeitoControleDiario, Ocorrencia } from "../types";
-import { mockFisioterapeutas } from "../store";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 
 const criarLeito = (numero: number): LeitoControleDiario => ({
   numero,
@@ -124,7 +124,7 @@ export function FormControleDiario() {
     setSalvo(false);
   };
 
-  const fisiosAtivos = mockFisioterapeutas.filter((f) => f.status === "Ativo");
+  const fisiosAtivos = getFisioterapeutasLista().filter((f) => f.status === "Ativo");
   const totalAtendimentos =
     (parseInt(plantonistas.matutino.atendimentos) || 0) +
     (parseInt(plantonistas.vespertino.atendimentos) || 0) +

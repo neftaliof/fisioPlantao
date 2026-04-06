@@ -17,6 +17,9 @@ import { UTIDetalhe } from "./components/UTIDetalhe";
 import { PassagemForm } from "./components/PassagemForm";
 import { PassagemView } from "./components/PassagemView";
 import { DashboardIndicadoresUti } from "./components/DashboardIndicadoresUti";
+import { CadastroHub } from "./components/cadastro/CadastroHub";
+import { CadastroPacientes } from "./components/cadastro/CadastroPacientes";
+import { CadastroLeitos } from "./components/cadastro/CadastroLeitos";
 
 export const router = createBrowserRouter([
   {
@@ -27,10 +30,15 @@ export const router = createBrowserRouter([
         path: "/",
         Component: Layout,
         children: [
-          { index: true, Component: FormDadosPaciente },
+          { index: true, Component: Dashboard },
           { path: "dashboard", Component: Dashboard },
+          { path: "plantao/dados-leito", Component: FormDadosPaciente },
+          { path: "cadastro", Component: CadastroHub },
+          { path: "cadastro/pacientes", Component: CadastroPacientes },
+          { path: "cadastro/leitos", Component: CadastroLeitos },
+          { path: "cadastro/fisioterapeutas", Component: Fisioterapeutas },
           { path: "indicadores-uti", Component: DashboardIndicadoresUti },
-          { path: "fisioterapeutas", Component: Fisioterapeutas },
+          { path: "fisioterapeutas", element: <Navigate to="/cadastro/fisioterapeutas" replace /> },
           {
             path: "formularios/dados-paciente",
             element: <Navigate to="/" replace />,

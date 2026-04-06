@@ -13,6 +13,7 @@ import {
   Building2,
   BarChart3,
   UserRound,
+  Library,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { LogoSantaCasa } from "./LogoSantaCasa";
@@ -42,9 +43,9 @@ const navSections: NavSection[] = [
     hint: "Ordem do turno",
     items: [
       {
-        label: "Dados do Paciente",
+        label: "Coleta por leito",
         icon: <UserRound size={18} />,
-        to: "/",
+        to: "/plantao/dados-leito",
       },
       {
         label: "Passagem de Plantão",
@@ -59,23 +60,34 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Cadastro",
+    hint: "Bases reutilizáveis",
+    items: [
+      {
+        label: "Cadastro",
+        icon: <Library size={18} />,
+        children: [
+          { label: "Visão geral", to: "/cadastro" },
+          { label: "Pacientes", to: "/cadastro/pacientes" },
+          { label: "Leitos por UTI", to: "/cadastro/leitos" },
+          { label: "Fisioterapeutas", to: "/cadastro/fisioterapeutas" },
+        ],
+      },
+    ],
+  },
+  {
     title: "Visão geral",
     items: [
       {
         label: "Dashboard",
         icon: <LayoutDashboard size={18} />,
-        to: "/dashboard",
+        to: "/",
       },
       {
         label: "Indicadores UTI",
         icon: <BarChart3 size={18} />,
         to: "/indicadores-uti",
         roles: ["admin", "coordenador", "admin_setor", "fisioterapeuta"],
-      },
-      {
-        label: "Fisioterapeutas",
-        icon: <Users size={18} />,
-        to: "/fisioterapeutas",
       },
     ],
   },
@@ -158,7 +170,7 @@ function NavItemComponent({ item }: { item: NavItem }) {
   return (
     <NavLink
       to={item.to!}
-      end={item.to === "/" || item.to === "/dashboard"}
+      end={item.to === "/"}
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition-all ${
           isActive

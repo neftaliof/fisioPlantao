@@ -4,7 +4,8 @@ import {
   ChevronLeft, ChevronDown, ChevronRight, Save, Send, RotateCcw,
   Copy, CheckCircle2, AlertTriangle, User, BedDouble
 } from "lucide-react";
-import { mockUTIs, mockFisioterapeutas } from "../store";
+import { mockUTIs } from "../store";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 import {
   getPassagens, addPassagem, updatePassagem,
   getUltimaPassagemEnviada,
@@ -595,7 +596,7 @@ export function PassagemForm() {
         )
         .map((u) => ({ id: u.id, nome: u.nome }));
     }
-    return mockFisioterapeutas
+    return getFisioterapeutasLista()
       .filter((f) => f.equipe === uti.equipe || user?.role === "admin")
       .map((f) => ({ id: f.id, nome: f.nome }));
   }, [uti, user?.role]);

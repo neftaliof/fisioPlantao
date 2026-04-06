@@ -12,7 +12,10 @@ import {
   Save,
 } from "lucide-react";
 import { Fisioterapeuta, Turno } from "../types";
-import { mockFisioterapeutas } from "../store";
+import {
+  getFisioterapeutasLista,
+  setFisioterapeutasLista,
+} from "../data/fisioterapeutasCadastroStore";
 import { UserAvatar } from "./UserAvatar";
 
 const turnoColors: Record<string, string> = {
@@ -37,7 +40,7 @@ const emptyForm: Omit<Fisioterapeuta, "id" | "createdAt"> = {
 };
 
 export function Fisioterapeutas() {
-  const [lista, setLista] = useState<Fisioterapeuta[]>(mockFisioterapeutas);
+  const [lista, setLista] = useState<Fisioterapeuta[]>(() => getFisioterapeutasLista());
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState<Fisioterapeuta | null>(null);
@@ -76,18 +79,19 @@ export function Fisioterapeutas() {
 
   const salvar = () => {
     if (!form.nome.trim() || !form.coren.trim()) return;
+    let next: Fisioterapeuta[];
     if (editando) {
-      setLista((prev) =>
-        prev.map((f) => (f.id === editando.id ? { ...f, ...form } : f))
-      );
+      next = lista.map((f) => (f.id === editando.id ? { ...f, ...form } : f));
     } else {
       const novo: Fisioterapeuta = {
         ...form,
         id: String(Date.now()),
         createdAt: new Date().toISOString().split("T")[0],
       };
-      setLista((prev) => [...prev, novo]);
+      next = [...lista, novo];
     }
+    setLista(next);
+    setFisioterapeutasLista(next);
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
@@ -96,7 +100,9 @@ export function Fisioterapeutas() {
   };
 
   const excluir = (id: string) => {
-    setLista((prev) => prev.filter((f) => f.id !== id));
+    const next = lista.filter((f) => f.id !== id);
+    setLista(next);
+    setFisioterapeutasLista(next);
     setDeleteConfirm(null);
   };
 

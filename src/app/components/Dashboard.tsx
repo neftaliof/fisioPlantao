@@ -14,7 +14,8 @@ import {
   Target,
   Database,
 } from "lucide-react";
-import { mockFisioterapeutas, mockControleDiario, mockUTIs } from "../store";
+import { mockControleDiario, mockUTIs } from "../store";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 import { UserAvatar } from "./UserAvatar";
 import { useAuth } from "../context/AuthContext";
 import { usePlantaoUti } from "../hooks/usePlantaoUti";
@@ -80,7 +81,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const cd = mockControleDiario[0];
-  const ativos = mockFisioterapeutas.filter((f) => f.status === "Ativo");
+  const ativos = getFisioterapeutasLista().filter((f) => f.status === "Ativo");
 
   const setoresPlantao = useMemo(() => {
     if (!user) return [];
@@ -459,7 +460,7 @@ export function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-slate-700">Equipe Ativa</h2>
           <button
-            onClick={() => navigate("/fisioterapeutas")}
+            onClick={() => navigate("/cadastro/fisioterapeutas")}
             className="text-xs text-teal-600 hover:underline flex items-center gap-1"
           >
             Ver todos <ArrowUpRight size={12} />

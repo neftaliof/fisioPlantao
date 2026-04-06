@@ -29,7 +29,7 @@ import {
   OPCOES_SETOR_ATUACAO_MSFORMS,
 } from "../data/scma001Constants";
 import { REGISTO_DIARIO_FORMS_SECOES } from "../data/scma001RegistoDiario";
-import { mockFisioterapeutas } from "../store";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 
 const inputCls =
   "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400";
@@ -45,7 +45,7 @@ function toggleId(list: string[], id: string): string[] {
 function turnoPadraoDoProfissional(nomeLogin: string): Turno | "" {
   const a = nomeLogin.trim().toLowerCase();
   if (!a) return "";
-  const hit = mockFisioterapeutas.find((f) => {
+  const hit = getFisioterapeutasLista().find((f) => {
     const b = f.nome.trim().toLowerCase();
     if (a === b) return true;
     const aw = a.split(/\s+/)[0];

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { CalendarDays, Clock, User, BedDouble, ArrowRight, Plus } from "lucide-react";
-import { mockControleDiario, mockPlantaoDadosPaciente, mockFisioterapeutas } from "../store";
+import { mockControleDiario, mockPlantaoDadosPaciente } from "../store";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 
 const turnoColors: Record<string, string> = {
   Matutino: "bg-amber-100 text-amber-800",
@@ -18,7 +19,7 @@ export function Plantoes() {
   const navigate = useNavigate();
 
   const getFisio = (id: string) =>
-    mockFisioterapeutas.find((f) => f.id === id)?.nome || "—";
+    getFisioterapeutasLista().find((f) => f.id === id)?.nome || "—";
 
   return (
     <div className="space-y-5">

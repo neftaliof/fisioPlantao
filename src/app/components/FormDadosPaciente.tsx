@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useState, useEffect, useMemo, type ReactNode } from "react";
 import {
   Save,
   Plus,
@@ -14,7 +14,11 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { LeitoDadosPaciente, Turno } from "../types";
-import { mockFisioterapeutas } from "../store";
+import { mockUTIs } from "../store";
+import { useAuth } from "../context/AuthContext";
+import { getNumerosLeitosParaUti } from "../data/leitosCadastroStore";
+import { listarPacientesCadastro } from "../data/pacientesCadastroStore";
+import { getFisioterapeutasLista } from "../data/fisioterapeutasCadastroStore";
 
 type AbaLeito = "id" | "resp" | "lab" | "estado";
 
@@ -110,16 +114,39 @@ function FieldHint({ children }: { children: ReactNode }) {
 }
 
 export function FormDadosPaciente() {
+  const { user, temAcesso } = useAuth();
+  const utisDisponiveis = useMemo(() => {
+    const u = mockUTIs.filter((x) => x.tipo === "uti");
+    if (!user || user.role === "admin") return u;
+    return u.filter((x) => temAcesso(x.id));
+  }, [user, temAcesso]);
+
+  const [utiId, setUtiId] = useState("");
+  useEffect(() => {
+    if (utisDisponiveis.length === 0) return;
+    setUtiId((cur) =>
+      cur && utisDisponiveis.some((u) => u.id === cur) ? cur : utisDisponiveis[0]!.id
+    );
+  }, [utisDisponiveis]);
+
   const hoje = new Date().toISOString().split("T")[0];
   const [data, setData] = useState(hoje);
   const [turno, setTurno] = useState<Turno>("Matutino");
   const [fisioterapeutaId, setFisioterapeutaId] = useState("");
-  const [leitos, setLeitos] = useState<LeitoDadosPaciente[]>(
-    Array.from({ length: 10 }, (_, i) => criarLeito(i + 1))
-  );
+  const [leitos, setLeitos] = useState<LeitoDadosPaciente[]>([]);
   const [expandidos, setExpandidos] = useState<Record<number, boolean>>({});
   const [abaPorLeito, setAbaPorLeito] = useState<Record<number, AbaLeito>>({});
   const [salvo, setSalvo] = useState(false);
+
+  useEffect(() => {
+    if (!utiId) return;
+    const nums = getNumerosLeitosParaUti(utiId);
+    setLeitos(nums.map((n) => criarLeito(n)));
+    setExpandidos({});
+    setAbaPorLeito({});
+  }, [utiId]);
+
+  const pacientesCadastro = listarPacientesCadastro();
 
   const toggleLeito = (num: number) => {
     setExpandidos((prev) => ({ ...prev, [num]: !prev[num] }));
@@ -151,7 +178,8 @@ export function FormDadosPaciente() {
   };
 
   const limparFormulario = () => {
-    setLeitos(Array.from({ length: 10 }, (_, i) => criarLeito(i + 1)));
+    const nums = utiId ? getNumerosLeitosParaUti(utiId) : [];
+    setLeitos(nums.map((n) => criarLeito(n)));
     setExpandidos({});
     setAbaPorLeito({});
     setSalvo(false);
@@ -203,7 +231,8 @@ export function FormDadosPaciente() {
             Dados por leito
           </h1>
           <p className="text-sm text-slate-500 max-w-md leading-relaxed">
-            Contexto do turno, depois cada leito em quatro passos curtos.
+            Escolha a UTI e o turno. Leitos vêm do cadastro (ou numeração padrão). Pacientes cadastrados
+            aparecem como sugestão no nome.
           </p>
           <p className="text-xs text-slate-400">
             <span className="font-medium text-slate-600">{leitosCadastrados}</span> completos
@@ -273,8 +302,27 @@ export function FormDadosPaciente() {
       {/* Contexto do plantão */}
       <section className="rounded-2xl bg-white p-6 shadow-sm shadow-slate-900/[0.04] ring-1 ring-slate-100">
         <h2 className="text-sm font-medium text-slate-900">Contexto do turno</h2>
-        <p className="mt-0.5 text-xs text-slate-500">Data, turno e quem está no plantão.</p>
-        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <p className="mt-0.5 text-xs text-slate-500">UTI, data, turno e fisioterapeuta.</p>
+        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="mb-1.5 block text-xs font-medium text-slate-500">UTI</label>
+            <select
+              value={utiId}
+              onChange={(e) => setUtiId(e.target.value)}
+              className={inField}
+              disabled={utisDisponiveis.length === 0}
+            >
+              {utisDisponiveis.length === 0 ? (
+                <option value="">Nenhuma UTI disponível</option>
+              ) : (
+                utisDisponiveis.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nomeAbrev} — {u.nome}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-500">Data</label>
             <input
@@ -306,7 +354,7 @@ export function FormDadosPaciente() {
               className={inField}
             >
               <option value="">Selecionar…</option>
-              {mockFisioterapeutas
+              {getFisioterapeutasLista()
                 .filter((f) => f.status === "Ativo")
                 .map((f) => (
                   <option key={f.id} value={f.id}>
@@ -469,18 +517,24 @@ export function FormDadosPaciente() {
                       <label className="mb-1.5 block text-xs font-medium text-slate-500">
                         Nome completo
                       </label>
+                      <datalist id={`cadastro-pacientes-nomes-${leito.numero}`}>
+                        {pacientesCadastro.map((p) => (
+                          <option key={p.id} value={p.nome} />
+                        ))}
+                      </datalist>
                       <input
                         type="text"
                         value={leito.pacienteNome}
+                        list={`cadastro-pacientes-nomes-${leito.numero}`}
                         onChange={(e) =>
                           atualizarLeito(leito.numero, "pacienteNome", e.target.value)
                         }
-                        placeholder="Prontuário ou pulseira"
+                        placeholder="Digite ou escolha do cadastro"
                         className={inField}
                       />
                       <p className="text-xs text-slate-400 leading-relaxed">
                         Com nome, o status do leito avança para em andamento até os demais dados
-                        estarem preenchidos.
+                        estarem preenchidos. Cadastre pacientes em <strong>Cadastro → Pacientes</strong>.
                       </p>
                     </div>
                   )}
