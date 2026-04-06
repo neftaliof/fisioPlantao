@@ -1,8 +1,8 @@
-# Fisioplantão (POC)
+# FisioPlantão
 
-Aplicação front-end (Vite + React) para plantão, passagens de UTI e indicadores.
+Aplicação web para **fisioterapia em UTI**: registo de **passagens de plantão** por unidade e turno, estado dos **leitos**, formulários institucionais associados e um **painel de indicadores** (uso de ventilação mecânica, mobilidade, bundle em VM, PAV, delirium, entre outros). ;; Pensada para apoio operacional e leitura agregada por **perfil** (equipa clínica vs. coordenação); os dados podem persistir no **navegador** (localStorage) enquanto não houver API dedicada.
 
-**Versão npm:** `0.1.0` (ver `package.json`). **Tag da entrega demo:** `v0.1.0-cliente` (`git checkout v0.1.0-cliente`). **Repositório:** [github.com/neftaliof/fisioPlantao](https://github.com/neftaliof/fisioPlantao) — branch `main`.
+**Stack:** Vite, React, TypeScript, Tailwind. **Código:** [github.com/neftaliof/fisioPlantao](https://github.com/neftaliof/fisioPlantao) · **Versão:** `package.json`.
 
 ## Desenvolvimento
 
@@ -13,31 +13,20 @@ npm run test
 npm run build
 ```
 
-## Insights com IA (Ollama)
+## Insights (Ollama)
 
-No ecrã **Indicadores UTI**, perfis autorizados podem gerar um texto de apoio com o botão **Gerar insights**. O fluxo é:
+No ecrã **Indicadores UTI**, quem tem permissão pode usar **Gerar insights**: os KPIs e alertas já calculados são enviados ao modelo; a resposta é um texto em markdown para leitura no painel. **Não substitui** critérios clínicos nem decisões da instituição; convém **validar** com os números dos gráficos e cartões. Mais contexto no painel, em **“Sobre os insights (IA)”**.
 
-1. O utilizador define período, unidade e filtros.
-2. A aplicação calcula KPIs e alertas como de costume.
-3. Esses dados (agregados + textos de alerta) são enviados num único pedido ao Ollama.
-4. O modelo devolve markdown para leitura no painel.
-
-**Variáveis de ambiente (Vite, prefixo `VITE_`):**
+**Variáveis de ambiente** (`VITE_`):
 
 | Variável | Função |
 |----------|--------|
-| `VITE_FEATURE_OLLAMA_INSIGHTS` | Definir `true` para mostrar o bloco de insights. |
-| `VITE_OLLAMA_URL` | URL base do Ollama ou proxy (ex. `http://localhost:11434`), sem barra final duplicada. |
-| `VITE_OLLAMA_MODEL` | Opcional; modelo usado no corpo do pedido (ex. `llama3.2`). |
+| `VITE_FEATURE_OLLAMA_INSIGHTS` | `true` para mostrar o bloco de insights. |
+| `VITE_OLLAMA_URL` | URL base do Ollama ou proxy (ex. `http://localhost:11434`). |
+| `VITE_OLLAMA_MODEL` | Opcional (ex. `llama3.2`). |
 
-**Texto para cliente / clínica (comunicar assim):**
+Em produção, definir com a equipa de **TI** onde o modelo corre, **logs** e **proteção de dados**.
 
-- A IA **resume** números e alertas **que já estão no sistema**; não acede a doentes nem a bases externas por si só.
-- **Não substitui** julgamento clínico nem regras internas; convém **confirmar** os valores no quadro e nos gráficos.
-- Em ambientes em produção, acordar **onde o modelo corre** (servidor próprio vs. nuvem), **retenção de logs** e **RGPD** com a equipa de TI/jurídico.
+## Dados de exemplo (local)
 
-Detalhe adicional para utilizadores finais: ver **“Sobre os insights (IA)”** no próprio painel de Indicadores UTI.
-
-## Dados de demonstração
-
-O painel admin pode incluir **Carregar dados de demonstração** quando `VITE_FEATURE_DEMO_SEED=true` em build de produção (em desenvolvimento costuma estar disponível por defeito). Isto substitui passagens e indicadores no `localStorage` do navegador.
+Para preencher rapidamente passagens e indicadores no **localStorage**, o painel administrativo pode expor a opção de **carregar dados de exemplo** quando `VITE_FEATURE_DEMO_SEED=true` na build; em desenvolvimento a opção costuma estar disponível por defeito.
