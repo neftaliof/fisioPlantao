@@ -1,0 +1,22 @@
+# Dependências e artefactos
+node_modules/
+dist/
+*.local
+
+# Ambiente (nunca commitar segredos)
+.env
+.env.*
+!.env.example
+
+# Logs e caches
+*.log
+npm-debug.log*
+.cache/
+.vite/
+
+# Testes / cobertura
+coverage/
+
+# SO / IDE
+.DS_Store
+Thumbs.db
