@@ -20,3 +20,5 @@ coverage/
 # SO / IDE
 .DS_Store
 Thumbs.db
+
+.vercel

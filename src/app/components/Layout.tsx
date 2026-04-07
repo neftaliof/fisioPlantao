@@ -39,6 +39,22 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
+    title: "Cadastro",
+    hint: "Bases reutilizáveis",
+    items: [
+      {
+        label: "Cadastro",
+        icon: <Library size={18} />,
+        children: [
+          { label: "Visão geral", to: "/cadastro" },
+          { label: "Pacientes — admissão (FOR.017)", to: "/cadastro/pacientes" },
+          { label: "Leitos por UTI", to: "/cadastro/leitos" },
+          { label: "Fisioterapeutas", to: "/cadastro/fisioterapeutas" },
+        ],
+      },
+    ],
+  },
+  {
     title: "Plantão",
     hint: "Ordem do turno",
     items: [
@@ -56,22 +72,6 @@ const navSections: NavSection[] = [
         label: "Histórico de Plantões",
         icon: <ClipboardList size={18} />,
         to: "/plantoes",
-      },
-    ],
-  },
-  {
-    title: "Cadastro",
-    hint: "Bases reutilizáveis",
-    items: [
-      {
-        label: "Cadastro",
-        icon: <Library size={18} />,
-        children: [
-          { label: "Visão geral", to: "/cadastro" },
-          { label: "Pacientes — admissão (FOR.017)", to: "/cadastro/pacientes" },
-          { label: "Leitos por UTI", to: "/cadastro/leitos" },
-          { label: "Fisioterapeutas", to: "/cadastro/fisioterapeutas" },
-        ],
       },
     ],
   },
