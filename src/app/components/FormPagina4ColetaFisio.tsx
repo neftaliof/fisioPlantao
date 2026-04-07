@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ChangeEvent } from "react";
 import {
   Save,
   RotateCcw,
@@ -8,8 +8,6 @@ import {
   Activity,
   Stethoscope,
   Lock,
-  FolderOpen,
-  FilePlus2,
   UserCheck,
   FlaskConical,
 } from "lucide-react";
@@ -21,11 +19,9 @@ import type {
   TriSimNao,
 } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { LogoSantaCasa } from "./LogoSantaCasa";
 import {
   emptyColetaPagina4,
   chavePacientePagina4,
-  carregarFichaPacientePagina4,
   salvarFichaPacientePagina4,
   mergeColetaPagina4,
 } from "../data/pagina4Store";
@@ -39,12 +35,103 @@ import {
 
 const inputCls =
   "w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400";
+const selectCls = `${inputCls} bg-white cursor-pointer`;
 const labelCls = "text-xs font-medium text-slate-600 block mb-1";
-const boxCls = "bg-white rounded-xl border border-slate-200 p-4 sm:p-5 space-y-4";
+const boxCls =
+  "w-full min-w-0 space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5";
 const h2Cls = "text-sm font-semibold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2";
+
+const pag4CardShellCls =
+  "w-full overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]";
+const pag4SectionTitleCls =
+  "mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400";
+const pag4ClinicalLabelCls =
+  "mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-teal-900/75";
+const pag4HeaderInputCls =
+  "block w-[6rem] rounded-lg border border-white/40 bg-white/10 px-2 py-1.5 text-center text-sm font-medium text-white outline-none transition placeholder:text-white/45 focus:border-white focus:ring-2 focus:ring-white/35 disabled:cursor-not-allowed disabled:opacity-50 sm:w-24";
+const pag4BodyInputCls =
+  "w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60";
+const pag4BodySelectCls = `${pag4BodyInputCls} cursor-pointer`;
+
+const HORAS_00_A_24 = Array.from({ length: 25 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTOS_00_A_59 = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+const IDADES_1_A_150 = Array.from({ length: 150 }, (_, i) => String(i + 1));
+
+function parseHoraAdmissao(horaAdmissao: string): { h: string; m: string } {
+  const raw = horaAdmissao?.trim();
+  if (!raw) return { h: "", m: "" };
+  const m = raw.match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return { h: "", m: "" };
+  let h = parseInt(m[1], 10);
+  if (Number.isNaN(h)) return { h: "", m: "" };
+  h = Math.min(24, Math.max(0, h));
+  let min = parseInt(m[2], 10);
+  if (Number.isNaN(min)) min = 0;
+  min = Math.min(59, Math.max(0, min));
+  if (h === 24) min = 0;
+  return { h: String(h).padStart(2, "0"), m: String(min).padStart(2, "0") };
+}
+
+function joinHoraAdmissao(h: string, m: string): string {
+  if (!h) return "";
+  const hn = parseInt(h, 10);
+  if (Number.isNaN(hn)) return "";
+  if (hn === 24) return "24:00";
+  const mm = (m || "00").padStart(2, "0");
+  return `${String(hn).padStart(2, "0")}:${mm}`;
+}
+
+function sexoSelectValue(sexo: string): "" | "M" | "F" {
+  const s = sexo.trim().toUpperCase();
+  if (s === "M" || s === "MAS" || s.startsWith("MASC")) return "M";
+  if (s === "F" || s.startsWith("FEM")) return "F";
+  return s === "M" || s === "F" ? s : "";
+}
+
+function idadeSelectValue(idade: string): string {
+  const n = parseInt(idade.trim(), 10);
+  return !Number.isNaN(n) && n >= 1 && n <= 150 ? String(n) : "";
+}
 
 function toggleId(list: string[], id: string): string[] {
   return list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+}
+
+function FloatingTextField({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  autoComplete?: string;
+}) {
+  return (
+    <div className="relative min-w-0">
+      <input
+        id={id}
+        type="text"
+        placeholder=" "
+        autoComplete={autoComplete}
+        disabled={disabled}
+        value={value}
+        onChange={onChange}
+        className="peer w-full rounded-lg border border-slate-200 bg-white px-3 pb-2 pt-5 text-sm text-slate-800 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60"
+      />
+      <label
+        htmlFor={id}
+        className="pointer-events-none absolute left-3 top-3.5 z-10 origin-[0] text-sm text-slate-500 transition-all duration-200 peer-focus:top-1.5 peer-focus:scale-[0.72] peer-focus:text-teal-700 peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:scale-[0.72] peer-[:not(:placeholder-shown)]:text-teal-800"
+      >
+        {label}
+      </label>
+    </div>
+  );
 }
 
 function SimNao({
@@ -90,10 +177,11 @@ export function FormPagina4ColetaFisio() {
   const [form, setForm] = useState<ColetaDadosFisioPagina4>(() =>
     emptyColetaPagina4(uid, unome)
   );
-  const [salvo, setSalvo] = useState(false);
+  const [acaoFeedback, setAcaoFeedback] = useState<null | "rascunho" | "cadastro">(null);
 
   const chaveAtual = chavePacientePagina4(form.paciente, form.dataNascimento);
   const admissaoBloqueada = form.admissaoConcluida;
+  const { h: horaH, m: horaM } = parseHoraAdmissao(form.horaAdmissao);
 
   const patch = useCallback((p: Partial<ColetaDadosFisioPagina4>) => {
     setForm((prev) => ({ ...prev, ...p }));
@@ -127,54 +215,34 @@ export function FormPagina4ColetaFisio() {
     }));
   }, []);
 
-  const salvar = () => {
-    const k = chavePacientePagina4(form.paciente, form.dataNascimento);
+  const persistirFichaAtual = (
+    dados: ColetaDadosFisioPagina4
+  ): ColetaDadosFisioPagina4 | null => {
+    const k = chavePacientePagina4(dados.paciente, dados.dataNascimento);
     if (!k) {
-      window.alert("Informe o nome do paciente e a data de nascimento para guardar a ficha.");
-      return;
+      window.alert(
+        "Informe o nome do paciente e a data de nascimento para guardar a ficha."
+      );
+      return null;
     }
     const merged = mergeColetaPagina4(
-      { ...form, preenchidoPorId: uid, preenchidoPorNome: unome },
+      { ...dados, preenchidoPorId: uid, preenchidoPorNome: unome },
       uid,
       unome
     );
     salvarFichaPacientePagina4(k, merged);
     setForm(merged);
-    setSalvo(true);
-    setTimeout(() => setSalvo(false), 2500);
+    return merged;
   };
 
-  const carregarFicha = () => {
-    const k = chavePacientePagina4(form.paciente, form.dataNascimento);
-    if (!k) {
-      window.alert("Informe o nome do paciente e a data de nascimento.");
-      return;
-    }
-    const ex = carregarFichaPacientePagina4(k);
-    if (!ex) {
-      window.alert("Não há ficha guardada para este paciente. Pode iniciar uma nova.");
-      return;
-    }
-    setForm(mergeColetaPagina4({ ...ex, preenchidoPorId: uid, preenchidoPorNome: unome }, uid, unome));
+  const salvarRascunho = () => {
+    if (admissaoBloqueada) return;
+    if (!persistirFichaAtual(form)) return;
+    setAcaoFeedback("rascunho");
+    setTimeout(() => setAcaoFeedback(null), 2500);
   };
 
-  const novaFicha = () => {
-    if (
-      !window.confirm(
-        "Iniciar ficha em branco? Guarde antes se precisar dos dados atuais."
-      )
-    ) {
-      return;
-    }
-    setForm(emptyColetaPagina4(uid, unome));
-  };
-
-  const concluirAdmissao = () => {
-    const k = chavePacientePagina4(form.paciente, form.dataNascimento);
-    if (!k) {
-      window.alert("Informe o nome do paciente e a data de nascimento.");
-      return;
-    }
+  const concluirCadastro = () => {
     if (form.admissaoConcluida) return;
     if (
       !window.confirm(
@@ -192,8 +260,8 @@ export function FormPagina4ColetaFisio() {
       admissaoConcluidaEm: now,
       admissaoConcluidaPorNome: unome,
     };
-    const merged = mergeColetaPagina4(next, uid, unome);
-    salvarFichaPacientePagina4(k, merged);
+    const merged = persistirFichaAtual(next);
+    if (!merged) return;
     upsertPacienteAdmissaoPagina4({
       paciente: merged.paciente,
       dataNascimento: merged.dataNascimento,
@@ -202,13 +270,28 @@ export function FormPagina4ColetaFisio() {
       procedencia: merged.procedencia,
       admissaoConcluidaEm: now,
     });
-    setForm(merged);
-    setSalvo(true);
-    setTimeout(() => setSalvo(false), 2500);
+    setAcaoFeedback("cadastro");
+    setTimeout(() => setAcaoFeedback(null), 2500);
   };
 
-  const limpar = () => {
-    if (!window.confirm("Limpar o formulário neste ecrã? A ficha guardada no servidor local não é apagada.")) {
+  const salvarCadastro = () => {
+    if (!chaveAtual) return;
+    if (admissaoBloqueada) {
+      if (!persistirFichaAtual(form)) return;
+      setAcaoFeedback("cadastro");
+      setTimeout(() => setAcaoFeedback(null), 2500);
+      return;
+    }
+    concluirCadastro();
+  };
+
+  const limparDados = () => {
+    if (admissaoBloqueada) return;
+    if (
+      !window.confirm(
+        "Limpar todos os dados neste ecrã? A ficha já gravada no armazenamento local do navegador (se existir) não é apagada."
+      )
+    ) {
       return;
     }
     setForm(emptyColetaPagina4(uid, unome));
@@ -230,96 +313,236 @@ export function FormPagina4ColetaFisio() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
-        <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-8">
-          <div className="flex-shrink-0">
-            <LogoSantaCasa variant="color" size={96} />
+    <div className="min-h-0 w-full min-w-0 space-y-6 bg-[#f0fdf4] pb-8 text-slate-800">
+      <div className={pag4CardShellCls}>
+        <div className="flex flex-col gap-4 bg-teal-600 px-6 py-5 sm:flex-row sm:items-center">
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-white/40 bg-white/15 text-white"
+            role="img"
+            aria-label="Sem foto do paciente — avatar genérico"
+          >
+            <UserRound className="h-7 w-7" strokeWidth={1.5} aria-hidden />
           </div>
-          <div className="flex-1 min-w-0 text-center lg:text-left">
-            <p className="text-xs uppercase tracking-wide text-teal-700 font-semibold">
-              Página 4 — Coleta de dados
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-medium tracking-tight text-white">
+              {form.paciente.trim() || "Novo paciente"}
             </p>
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-800">
-              Formulário coleta de dados — Fisioterapia
-            </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Admissão e avaliação inicial + FOR.017 — preenchidos <strong>uma vez na entrada</strong>.{" "}
-              O <strong>cadastro do paciente</strong> no sistema (para coleta por leito e restantes fluxos)
-              ocorre <strong>somente ao concluir a admissão</strong> aqui, não noutros ecrãs. O{" "}
-              <strong>destino</strong> (alta, transferência ou óbito) preenche-se <strong>só na saída</strong>{" "}
-              do paciente.
-            </p>
+            <p className="mt-0.5 text-xs text-white/75">Santa Casa · Fisioplantão · Anápolis</p>
           </div>
-          <div className="text-[11px] text-slate-500 space-y-1 lg:text-right flex-shrink-0 max-w-xs lg:max-w-none">
-            <p>
-              <strong className="text-slate-700">Admissão</strong> — Rev. 11/02/2027 · Versão 1
-            </p>
-            <p>
-              <strong className="text-slate-700">FOR.017</strong> — Elab. 11/07/2024 · Versão 1 ·
-              Pág. 2 de 3 · Rev. 11/02/2027
-            </p>
+          <div className="shrink-0 text-left sm:ml-auto sm:text-right">
+            <label
+              htmlFor="pag4-internacao-mensal-header"
+              className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-white/65"
+            >
+              Internação mensal nº
+            </label>
+            <input
+              id="pag4-internacao-mensal-header"
+              className={`${pag4HeaderInputCls} mt-1`}
+              disabled={admissaoBloqueada}
+              value={form.internacaoMensalNum}
+              onChange={(e) => patch({ internacaoMensalNum: e.target.value })}
+              placeholder="—"
+            />
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row flex-wrap gap-2 sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={carregarFicha}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
-            >
-              <FolderOpen size={14} />
-              Carregar ficha
-            </button>
-            <button
-              type="button"
-              onClick={novaFicha}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
-            >
-              <FilePlus2 size={14} />
-              Nova ficha
-            </button>
-            {!admissaoBloqueada && (
-              <button
-                type="button"
-                onClick={concluirAdmissao}
-                disabled={!chaveAtual}
-                className="inline-flex items-center gap-2 px-3 py-2 border border-amber-300 bg-amber-50 rounded-lg text-sm text-amber-950 hover:bg-amber-100 disabled:opacity-40"
-              >
-                <UserCheck size={14} />
-                Concluir admissão
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2 justify-end">
-            <button
-              type="button"
-              onClick={limpar}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw size={14} />
-              Limpar ecrã
-            </button>
-            <button
-              type="button"
-              onClick={salvar}
-              disabled={!chaveAtual}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 disabled:opacity-40"
-            >
-              {salvo ? <CheckCircle2 size={14} /> : <Save size={14} />}
-              {salvo ? "Guardado" : "Guardar ficha"}
-            </button>
-          </div>
+
+        <div className="space-y-6 px-6 pb-2 pt-6 text-sm md:px-8">
+          <section className="min-w-0" aria-labelledby="pag4-sec-ident">
+            <h2 id="pag4-sec-ident" className={pag4SectionTitleCls}>
+              Identificação
+            </h2>
+            <FloatingTextField
+              id="pag4-header-paciente"
+              label="Nome completo do paciente"
+              value={form.paciente}
+              onChange={(e) => patch({ paciente: e.target.value })}
+              disabled={admissaoBloqueada}
+              autoComplete="name"
+            />
+          </section>
+
+          <hr className="border-0 border-t border-slate-200" />
+
+          <section className="min-w-0 space-y-4" aria-labelledby="pag4-sec-datas">
+            <h2 id="pag4-sec-datas" className={pag4SectionTitleCls}>
+              Datas e admissão
+            </h2>
+            <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-12">
+              <div className="min-w-0 sm:col-span-7">
+                <FloatingTextField
+                  id="pag4-header-procedencia"
+                  label="Procedência / Encaminhamento"
+                  value={form.procedencia}
+                  onChange={(e) => patch({ procedencia: e.target.value })}
+                  disabled={admissaoBloqueada}
+                />
+              </div>
+              <div className="min-w-0 sm:col-span-2">
+                <label htmlFor="pag4-header-sexo" className={pag4ClinicalLabelCls}>
+                  Sexo
+                </label>
+                <select
+                  id="pag4-header-sexo"
+                  className={pag4BodySelectCls}
+                  disabled={admissaoBloqueada}
+                  value={sexoSelectValue(form.sexo)}
+                  onChange={(e) => patch({ sexo: e.target.value })}
+                >
+                  <option value="">Selecione o sexo</option>
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select>
+              </div>
+              <div className="min-w-0 sm:col-span-3">
+                <label htmlFor="pag4-header-idade" className={pag4ClinicalLabelCls}>
+                  Idade
+                </label>
+                <select
+                  id="pag4-header-idade"
+                  className={pag4BodySelectCls}
+                  disabled={admissaoBloqueada}
+                  value={idadeSelectValue(form.idade)}
+                  onChange={(e) => patch({ idade: e.target.value })}
+                >
+                  <option value="">Selecione a idade</option>
+                  {IDADES_1_A_150.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-0 sm:col-span-4">
+                <label htmlFor="pag4-header-dt-nasc" className={pag4ClinicalLabelCls}>
+                  Data de nascimento
+                </label>
+                <input
+                  id="pag4-header-dt-nasc"
+                  type="date"
+                  className={pag4BodyInputCls}
+                  disabled={admissaoBloqueada}
+                  value={form.dataNascimento}
+                  onChange={(e) => patch({ dataNascimento: e.target.value })}
+                />
+              </div>
+              <div className="min-w-0 sm:col-span-4">
+                <label htmlFor="pag4-header-dt-adm" className={pag4ClinicalLabelCls}>
+                  Data de admissão
+                </label>
+                <input
+                  id="pag4-header-dt-adm"
+                  type="date"
+                  className={pag4BodyInputCls}
+                  disabled={admissaoBloqueada}
+                  value={form.dataAdmissao}
+                  onChange={(e) => patch({ dataAdmissao: e.target.value })}
+                />
+              </div>
+              <div className="min-w-0 sm:col-span-4">
+                <span className={pag4ClinicalLabelCls}>Hora e min</span>
+                <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5">
+                  <select
+                    id="pag4-header-hora"
+                    aria-label="Hora de admissão"
+                    className={`${pag4BodySelectCls} min-w-0 w-full`}
+                    disabled={admissaoBloqueada}
+                    value={horaH}
+                    onChange={(e) => {
+                      const nh = e.target.value;
+                      if (!nh) {
+                        patch({ horaAdmissao: "" });
+                        return;
+                      }
+                      const { m: curM } = parseHoraAdmissao(form.horaAdmissao);
+                      patch({
+                        horaAdmissao: joinHoraAdmissao(nh, nh === "24" ? "00" : curM || "00"),
+                      });
+                    }}
+                  >
+                    <option value="">Selecione a hora</option>
+                    {HORAS_00_A_24.map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+                  <span
+                    className="shrink-0 self-center text-sm font-medium text-slate-400"
+                    aria-hidden
+                  >
+                    :
+                  </span>
+                  <select
+                    id="pag4-header-min"
+                    aria-label="Minutos de admissão"
+                    className={`${pag4BodySelectCls} min-w-0 w-full`}
+                    disabled={admissaoBloqueada || !horaH || horaH === "24"}
+                    value={!horaH ? "" : horaH === "24" ? "00" : horaM || "00"}
+                    onChange={(e) => {
+                      const nm = e.target.value;
+                      const { h: curH } = parseHoraAdmissao(form.horaAdmissao);
+                      if (!curH || nm === "") return;
+                      patch({ horaAdmissao: joinHoraAdmissao(curH, nm) });
+                    }}
+                  >
+                    {!horaH ? <option value="">Selecione os minutos</option> : null}
+                    {MINUTOS_00_A_59.map((mm) => (
+                      <option key={mm} value={mm}>
+                        {mm}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200/90 bg-slate-50/60 px-6 py-4 md:px-8">
+          <button
+            type="button"
+            onClick={limparDados}
+            disabled={admissaoBloqueada}
+            className="inline-flex items-center gap-2 rounded-lg border-0 bg-transparent px-3 py-2 text-sm text-slate-500 transition hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <RotateCcw size={14} />
+            Limpar dados
+          </button>
+          <button
+            type="button"
+            onClick={salvarRascunho}
+            disabled={!chaveAtual || admissaoBloqueada}
+            className="inline-flex items-center gap-2 rounded-lg border border-teal-600 bg-white px-3 py-2 text-sm font-medium text-teal-700 shadow-sm transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {acaoFeedback === "rascunho" ? <CheckCircle2 size={14} /> : <Save size={14} />}
+            {acaoFeedback === "rascunho" ? "Rascunho guardado" : "Salvar rascunho"}
+          </button>
+          <button
+            type="button"
+            onClick={salvarCadastro}
+            disabled={!chaveAtual}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#0d9488] px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {acaoFeedback === "cadastro" ? <CheckCircle2 size={14} /> : <UserCheck size={14} />}
+            {acaoFeedback === "cadastro" ? "Guardado" : "Salvar cadastro"}
+          </button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-4 py-3 text-xs text-slate-600 space-y-1">
+      <div className="w-full min-w-0 space-y-1 rounded-xl border border-emerald-100 bg-white/90 px-4 py-3 text-xs text-slate-700 shadow-sm">
         <p>
           <strong className="text-slate-800">Chave da ficha:</strong> nome do paciente + data de nascimento.
           {chaveAtual ? (
-            <span className="text-teal-700 ml-1">Ficha identificada — pode guardar ou carregar.</span>
+            <span className="text-teal-700 ml-1">
+              Ficha identificada — pode usar <strong>Salvar rascunho</strong> ou{" "}
+              <strong>Salvar cadastro</strong>.
+            </span>
           ) : (
-            <span className="text-amber-700 ml-1">Preencha nome e data de nascimento para ativar o guardar.</span>
+            <span className="text-amber-700 ml-1">
+              Preencha nome e data de nascimento para ativar{" "}
+              <strong>Salvar rascunho</strong> e <strong>Salvar cadastro</strong>.
+            </span>
           )}
         </p>
         {admissaoBloqueada && (
@@ -339,7 +562,7 @@ export function FormPagina4ColetaFisio() {
 
       <fieldset
         disabled={admissaoBloqueada}
-        className="space-y-6 min-w-0 border-0 p-0 m-0 disabled:opacity-[0.68] max-w-5xl"
+        className="m-0 w-full min-w-0 space-y-6 border-0 p-0 pb-8 disabled:opacity-[0.68]"
       >
         <legend className="sr-only">
           Dados de admissão e avaliação — bloqueados após conclusão
@@ -351,75 +574,6 @@ export function FormPagina4ColetaFisio() {
           <UserRound size={18} className="text-teal-600" />
           Identificação e convênio
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Internação mensal nº</label>
-            <input
-              className={inputCls}
-              value={form.internacaoMensalNum}
-              onChange={(e) => patch({ internacaoMensalNum: e.target.value })}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Paciente</label>
-            <input
-              className={inputCls}
-              value={form.paciente}
-              onChange={(e) => patch({ paciente: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Sexo</label>
-            <input
-              className={inputCls}
-              value={form.sexo}
-              onChange={(e) => patch({ sexo: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Procedência</label>
-            <input
-              className={inputCls}
-              value={form.procedencia}
-              onChange={(e) => patch({ procedencia: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Data de nascimento</label>
-            <input
-              type="date"
-              className={inputCls}
-              value={form.dataNascimento}
-              onChange={(e) => patch({ dataNascimento: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Idade</label>
-            <input
-              className={inputCls}
-              value={form.idade}
-              onChange={(e) => patch({ idade: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Data de admissão</label>
-            <input
-              type="date"
-              className={inputCls}
-              value={form.dataAdmissao}
-              onChange={(e) => patch({ dataAdmissao: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Hora de admissão</label>
-            <input
-              type="time"
-              className={inputCls}
-              value={form.horaAdmissao}
-              onChange={(e) => patch({ horaAdmissao: e.target.value })}
-            />
-          </div>
-        </div>
         <div>
           <span className={labelCls}>Convênio</span>
           <div className="flex flex-wrap gap-4">
@@ -1252,25 +1406,6 @@ export function FormPagina4ColetaFisio() {
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-end gap-2 pb-8">
-        <button
-          type="button"
-          onClick={limpar}
-          className="inline-flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
-        >
-          <RotateCcw size={14} />
-          Limpar ecrã
-        </button>
-        <button
-          type="button"
-          onClick={salvar}
-          disabled={!chaveAtual}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 disabled:opacity-40"
-        >
-          <Save size={14} />
-          Guardar ficha (inclui destino)
-        </button>
-      </div>
     </div>
   );
 }

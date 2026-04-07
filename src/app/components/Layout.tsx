@@ -102,10 +102,6 @@ const navSections: NavSection[] = [
           { label: "Evolução (SCMA.FIS.FOR.001)", to: "/formularios/evolucao" },
           { label: "Bundle PAV (SCMA.SCIH.FOR.021)", to: "/formularios/bundle-pav" },
           {
-            label: "Página 4 — Coleta / admissão (FOR.017)",
-            to: "/formularios/pagina-4",
-          },
-          {
             label: "Avaliação de reabilitação",
             to: "/formularios/avaliacao-reabilitacao",
           },

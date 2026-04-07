@@ -18,7 +18,6 @@ import { PassagemForm } from "./components/PassagemForm";
 import { PassagemView } from "./components/PassagemView";
 import { DashboardIndicadoresUti } from "./components/DashboardIndicadoresUti";
 import { CadastroHub } from "./components/cadastro/CadastroHub";
-import { CadastroPacientes } from "./components/cadastro/CadastroPacientes";
 import { CadastroLeitos } from "./components/cadastro/CadastroLeitos";
 
 export const router = createBrowserRouter([
@@ -34,7 +33,7 @@ export const router = createBrowserRouter([
           { path: "dashboard", Component: Dashboard },
           { path: "plantao/dados-leito", Component: FormDadosPaciente },
           { path: "cadastro", Component: CadastroHub },
-          { path: "cadastro/pacientes", Component: CadastroPacientes },
+          { path: "cadastro/pacientes", Component: FormPagina4ColetaFisio },
           { path: "cadastro/leitos", Component: CadastroLeitos },
           { path: "cadastro/fisioterapeutas", Component: Fisioterapeutas },
           { path: "indicadores-uti", Component: DashboardIndicadoresUti },
@@ -46,7 +45,10 @@ export const router = createBrowserRouter([
           { path: "formularios/controle-diario", Component: FormControleDiario },
           { path: "formularios/evolucao", Component: FormScmaFisFor001 },
           { path: "formularios/bundle-pav", Component: FormBundlePav021 },
-          { path: "formularios/pagina-4", Component: FormPagina4ColetaFisio },
+          {
+            path: "formularios/pagina-4",
+            element: <Navigate to="/cadastro/pacientes" replace />,
+          },
           {
             path: "formularios/avaliacao-reabilitacao",
             Component: AvaliacaoReabilitacao,
